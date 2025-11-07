@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: mcp-server-demo
+  ai:
+    mcp:
+      server:
+        name: mcp-server
+
+server:
+  port: 8082
