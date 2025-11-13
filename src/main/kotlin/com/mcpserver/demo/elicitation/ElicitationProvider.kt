@@ -6,50 +6,50 @@ import org.springaicommunity.mcp.annotation.McpTool
 import org.springframework.stereotype.Service
 import java.util.UUID
 
-data class Item(
-    var id: UUID,
-    var name: String,
-    var price: Double
-)
+@Service
+class ElicitationProvider {
+    data class Item(
+        var id: UUID,
+        var name: String,
+        var price: Double
+    )
 
-val items = mutableListOf(
-    Item(UUID.randomUUID(),"Pizza", 10.0),
-    Item(UUID.randomUUID(),"Burger", 15.0)
-)
+    val items = mutableListOf(
+        Item(UUID.randomUUID(),"Pizza", 10.0),
+        Item(UUID.randomUUID(),"Burger", 15.0)
+    )
 
-val presentation = items.map { item -> "${item.id}: ${item.name} - R$${item.price}"}
+    val presentation = items.map { item -> "${item.id}: ${item.name} - R$${item.price}"}
 
-val elicitationItem = McpSchema.ElicitRequest.builder()
-    .message("Qual item você deseja alterar o preço? \n $presentation")
-    .requestedSchema(
-        mapOf(
-            "type" to "object",
-            "properties" to mapOf(
-                "itemId" to mapOf(
-                    "type" to "string"
-                ),
-                "itemPrice" to mapOf(
-                    "type" to "string"
-                )
-            )))
-    .build()
+    val elicitationItem = McpSchema.ElicitRequest.builder()
+        .message("Qual item você deseja alterar o preço? \n $presentation")
+        .requestedSchema(
+            mapOf(
+                "type" to "object",
+                "properties" to mapOf(
+                    "itemId" to mapOf(
+                        "type" to "string"
+                    ),
+                    "itemPrice" to mapOf(
+                        "type" to "string"
+                    )
+                )))
+        .build()
 
-val elicitationConfirm = McpSchema.ElicitRequest.builder()
-    .message("Deseja confirmar alteração?")
-    .requestedSchema(
-        mapOf(
-            "type" to "object",
-            "properties" to mapOf(
-                "confirm" to mapOf(
-                    "type" to "boolean"
+    val elicitationConfirm = McpSchema.ElicitRequest.builder()
+        .message("Deseja confirmar alteração?")
+        .requestedSchema(
+            mapOf(
+                "type" to "object",
+                "properties" to mapOf(
+                    "confirm" to mapOf(
+                        "type" to "boolean"
+                    )
                 )
             )
         )
-    )
-    .build()
+        .build()
 
-@Service
-class ElicitationProvider {
     @McpTool(
         description = "Use esta ferramenta quando o parceiro desejar alterar o preço de um item no seu cardápio."
     )
