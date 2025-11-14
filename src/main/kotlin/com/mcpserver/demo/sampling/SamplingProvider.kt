@@ -100,6 +100,8 @@ class SamplingProvider(
 
         val samplingResponse = exchange.createMessage(createSamplingRequest)
 
-        return samplingResponse.toString()
+        val result = samplingResponse.content as McpSchema.TextContent
+
+        return result.text
     }
 }
