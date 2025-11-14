@@ -4,22 +4,21 @@ import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema
 import org.springaicommunity.mcp.annotation.McpTool
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class ElicitationProvider {
     data class Item(
-        var id: UUID,
+        val id: Int,
         var name: String,
         var price: Double
     )
 
     val items = mutableListOf(
-        Item(UUID.randomUUID(),"Pizza", 10.0),
-        Item(UUID.randomUUID(),"Burger", 15.0)
+        Item(1,"Pizza", 10.0),
+        Item(2,"Burger", 15.0)
     )
 
-    val presentation = items.map { item -> "${item.id}: ${item.name} - R$${item.price}"}
+    val presentation = items.joinToString("\n") { item -> "ID: ${item.id} - Nome: ${item.name} - Preço: R$${item.price}" }
 
     val elicitationItem = McpSchema.ElicitRequest.builder()
         .message("Qual item você deseja alterar o preço? \n $presentation")
@@ -27,10 +26,10 @@ class ElicitationProvider {
             mapOf(
                 "type" to "object",
                 "properties" to mapOf(
-                    "itemId" to mapOf(
-                        "type" to "string"
+                    "id" to mapOf(
+                        "type" to "number"
                     ),
-                    "itemPrice" to mapOf(
+                    "price" to mapOf(
                         "type" to "string"
                     )
                 )))
@@ -51,21 +50,21 @@ class ElicitationProvider {
         .build()
 
     @McpTool(
-        description = "Use esta ferramenta quando o parceiro desejar alterar o preço de um item no seu cardápio."
+        description = """
+            Use essa ferramenta para solicitações de alteração de preço de items.
+            A ferramenta é capaz de solicitar ao usuario qual item deseja alterar e o preço do item
+        """
     )
-    fun updateMerchantItemPrice(exchange: McpSyncServerExchange): String {
+    fun updateItemPrice(exchange: McpSyncServerExchange): String {
         val elicitationItemResult = exchange.createElicitation(elicitationItem)
 
         return when (elicitationItemResult.action.name) {
             "ACCEPT" -> {
-                val itemId = elicitationItemResult.content["itemId"] as String
-                val itemPrice = elicitationItemResult.content["itemPrice"]?.toString()?.toDoubleOrNull()
+                val itemId = elicitationItemResult.content["id"] as Int
+                val itemPrice =
+                    elicitationItemResult.content["price"]?.toString()?.toDoubleOrNull() ?: return "Preço inválido"
 
-                if (itemId.isBlank() || itemPrice == null) {
-                    return "Preço inválido"
-                }
-
-                val item = items.find { it.id == UUID.fromString(itemId) }
+                val item = items.find { it.id == itemId }
 
                 if (item != null) {
                     val elicitationConfirmResult = exchange.createElicitation(elicitationConfirm)
