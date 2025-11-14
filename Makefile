@@ -1,0 +1,2 @@
+inspector:
+	npx @modelcontextprotocol/inspector
